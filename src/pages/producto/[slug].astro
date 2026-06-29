@@ -1,0 +1,282 @@
+---
+import Base from '../../layouts/Base.astro';
+import ColorSwatches from '../../components/ColorSwatches.astro';
+import PriceTiers from '../../components/PriceTiers.astro';
+import ContactButtons from '../../components/ContactButtons.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const products = await getCollection('products');
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}
+
+const { product } = Astro.props;
+const { name, description, images, colors, sizes, prices, category, soldOut } =
+  product.data;
+const { Content } = await product.render();
+
+const settings = await getEntry('settings', 'site');
+const currency = settings?.data.currency ?? '$';
+const wa = settings?.data.whatsappNumber;
+const ig = settings?.data.instagramHandle;
+---
+
+<Base
+  title={`${name} — Yulistore`}
+  description={description ?? `${name} disponible en Yulistore.`}
+  image={images[0]}
+>
+  <article class="container product">
+    <nav class="breadcrumb" aria-label="Navegación">
+      <a href="/">Catálogo</a>
+      <span aria-hidden="true">/</span>
+      <span>{name}</span>
+    </nav>
+
+    <div class="product-grid">
+      <!-- Galería -->
+      <section class="gallery" aria-label="Fotos del producto">
+        <div class="gallery-main">
+          <img id="gallery-main-img" src={images[0]} alt={name} width="1000" height="1250" />
+          {soldOut && <span class="badge gallery-badge">Agotado</span>}
+        </div>
+        {
+          images.length > 1 && (
+            <div class="thumbs" role="group" aria-label="Más fotos">
+              {images.map((img, i) => (
+                <button
+                  class:list={['thumb', { 'is-active': i === 0 }]}
+                  type="button"
+                  data-src={img}
+                  aria-label={`Ver foto ${i + 1}`}
+                >
+                  <img src={img} alt="" width="120" height="150" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )
+        }
+      </section>
+
+      <!-- Información -->
+      <section class="info">
+        {category && <p class="eyebrow">{category}</p>}
+        <h1 class="product-name">{name}</h1>
+
+        {description && <p class="product-desc">{description}</p>}
+
+        {
+          colors.length > 0 && (
+            <div class="block">
+              <h2 class="block-title">Colores</h2>
+              <ColorSwatches colors={colors} size="md" showLabels />
+            </div>
+          )
+        }
+
+        {
+          sizes.length > 0 && (
+            <div class="block">
+              <h2 class="block-title">Tallas</h2>
+              <ul class="sizes">
+                {sizes.map((s) => (
+                  <li class="size-chip">{s}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {
+          prices.length > 0 && (
+            <div class="block">
+              <h2 class="block-title">Precios por cantidad</h2>
+              <PriceTiers prices={prices} currency={currency} variant="table" />
+            </div>
+          )
+        }
+
+        <div class="block contact-block">
+          <ContactButtons productName={name} whatsappNumber={wa} instagramHandle={ig} />
+          <p class="contact-note">
+            Te respondemos por mensaje directo para coordinar tu pedido y el envío.
+          </p>
+        </div>
+
+        <div class="prose">
+          <Content />
+        </div>
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .product {
+    padding-top: 2rem;
+  }
+
+  .breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-soft);
+    margin-bottom: 2rem;
+  }
+  .breadcrumb a:hover {
+    color: var(--color-ink);
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  @media (min-width: 820px) {
+    .product-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      align-items: start;
+    }
+    .gallery {
+      position: sticky;
+      top: 96px;
+    }
+  }
+
+  .gallery-main {
+    position: relative;
+    background: var(--color-paper-2);
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+  .gallery-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.7rem;
+  }
+  .thumb {
+    width: 72px;
+    height: 90px;
+    padding: 0;
+    border: 1px solid var(--color-line);
+    background: var(--color-paper-2);
+    overflow: hidden;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+  }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .thumb:hover {
+    opacity: 1;
+  }
+  .thumb.is-active {
+    opacity: 1;
+    border-color: var(--color-ink);
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  .product-name {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    margin-top: 0.3rem;
+  }
+
+  .product-desc {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-soft);
+    max-width: 50ch;
+  }
+
+  .block {
+    border-top: 1px solid var(--color-line);
+    padding-top: 1.4rem;
+  }
+
+  .block-title {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-soft);
+    margin-bottom: 0.9rem;
+  }
+
+  .sizes {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+  }
+  .size-chip {
+    min-width: 2.6rem;
+    padding: 0.45rem 0.8rem;
+    text-align: center;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+  }
+
+  .contact-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .contact-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--color-soft);
+  }
+
+  .prose {
+    color: var(--color-soft);
+    font-size: 0.98rem;
+    line-height: 1.7;
+  }
+  .prose :global(p) {
+    margin: 0 0 1rem;
+  }
+</style>
+
+<script>
+  const main = document.getElementById('gallery-main-img') as HTMLImageElement | null;
+  const thumbs = document.querySelectorAll<HTMLButtonElement>('.thumb');
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener('click', () => {
+      const src = thumb.dataset.src;
+      if (!src || !main) return;
+      main.src = src;
+      thumbs.forEach((t) => t.classList.toggle('is-active', t === thumb));
+    });
+  });
+</script>

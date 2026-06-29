@@ -1,0 +1,72 @@
+---
+interface Color {
+  name: string;
+  hex?: string;
+}
+interface Props {
+  colors: Color[];
+  size?: 'sm' | 'md';
+  showLabels?: boolean;
+}
+const { colors, size = 'sm', showLabels = false } = Astro.props;
+---
+
+{
+  colors.length > 0 && (
+    <ul class:list={['swatches', `swatches--${size}`]} aria-label="Colores disponibles">
+      {colors.map((c) => (
+        <li class="swatch-item">
+          <span
+            class="swatch-dot"
+            style={`background:${c.hex ?? '#cccccc'}`}
+            title={c.name}
+          >
+            <span class="sr-only">{c.name}</span>
+          </span>
+          {showLabels && <span class="swatch-label">{c.name}</span>}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .swatches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+  }
+
+  .swatch-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .swatch-dot {
+    display: inline-block;
+    border-radius: 50%;
+    border: 1px solid rgba(22, 20, 18, 0.18);
+    box-shadow: inset 0 0 0 2px var(--color-paper);
+  }
+
+  .swatches--sm .swatch-dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .swatches--md .swatch-dot {
+    width: 22px;
+    height: 22px;
+  }
+
+  .swatch-label {
+    font-size: 0.82rem;
+    color: var(--color-soft);
+    letter-spacing: 0.02em;
+  }
+</style>

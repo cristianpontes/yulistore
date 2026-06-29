@@ -1,0 +1,137 @@
+# Configuración de Sveltia CMS para Yulistore
+# Documentación: https://github.com/sveltia/sveltia-cms
+
+backend:
+  name: github
+  # Cambia "TU-USUARIO" por el usuario u organización de GitHub donde vive el repo.
+  repo: TU-USUARIO/yulistore
+  branch: main
+  # URL del Worker de OAuth (sveltia-cms-auth) que despliegas en Cloudflare.
+  # Cambia este dominio por el de tu Worker.
+  base_url: https://yulistore-auth.TU-SUBDOMINIO.workers.dev
+
+# Editar en una rama y abrir Pull Request, o publicar directo. "simple" = publica directo.
+publish_mode: simple
+
+# Carpeta donde se guardan las fotos subidas y cómo se referencian en el sitio.
+media_folder: public/images/products
+public_folder: /images/products
+
+# Idioma de la interfaz
+locale: es
+
+collections:
+  # ---------------------------------------------------------------
+  - name: products
+    label: Productos
+    label_singular: Producto
+    folder: src/content/products
+    create: true
+    delete: true
+    slug: '{{slug}}'
+    identifier_field: name
+    summary: '{{name}}'
+    sortable_fields: [order, name]
+    fields:
+      - { name: name, label: Nombre, widget: string }
+      - {
+          name: description,
+          label: Descripción corta,
+          widget: text,
+          required: false,
+        }
+      - {
+          name: category,
+          label: Categoría,
+          widget: select,
+          options: [Enterizos, Conjuntos, Tops, Leggings, Shorts, Accesorios],
+          required: false,
+        }
+      - name: images
+        label: Fotos
+        label_singular: Foto
+        widget: list
+        field: { name: image, label: Foto, widget: image }
+      - name: colors
+        label: Colores
+        label_singular: Color
+        widget: list
+        required: false
+        summary: '{{fields.name}}'
+        fields:
+          - { name: name, label: Nombre del color, widget: string }
+          - {
+              name: hex,
+              label: Color (muestra),
+              widget: color,
+              required: false,
+              enableAlpha: false,
+            }
+      - name: sizes
+        label: Tallas
+        label_singular: Talla
+        widget: list
+        required: false
+        # El editor escribe S, M, L, XL... una por línea
+      - name: prices
+        label: Precios por cantidad
+        label_singular: Precio
+        widget: list
+        summary: '{{fields.quantity}} = {{fields.price}}'
+        fields:
+          - { name: quantity, label: Cantidad, widget: number, value_type: int, min: 1 }
+          - { name: price, label: Precio, widget: number, value_type: float, min: 0 }
+      - {
+          name: featured,
+          label: Destacado (aparece primero),
+          widget: boolean,
+          default: false,
+        }
+      - {
+          name: soldOut,
+          label: Agotado,
+          widget: boolean,
+          default: false,
+        }
+      - {
+          name: order,
+          label: Orden manual,
+          widget: number,
+          value_type: int,
+          default: 0,
+          required: false,
+        }
+      - {
+          name: body,
+          label: Detalle largo (opcional),
+          widget: markdown,
+          required: false,
+        }
+
+  # ---------------------------------------------------------------
+  - name: settings
+    label: Configuración del sitio
+    files:
+      - name: site
+        label: Datos de contacto
+        file: src/content/settings/site.json
+        fields:
+          - {
+              name: whatsappNumber,
+              label: WhatsApp (formato internacional sin +),
+              widget: string,
+              hint: 'Ej: 584120000000',
+            }
+          - {
+              name: instagramHandle,
+              label: Usuario de Instagram (sin @),
+              widget: string,
+              hint: 'Ej: yulistore',
+            }
+          - { name: currency, label: Símbolo de moneda, widget: string, default: '$' }
+          - {
+              name: announcement,
+              label: Anuncio superior (opcional),
+              widget: string,
+              required: false,
+            }

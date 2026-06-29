@@ -1,0 +1,100 @@
+---
+interface Tier {
+  quantity: number;
+  price: number;
+}
+interface Props {
+  prices: Tier[];
+  currency?: string;
+  variant?: 'inline' | 'table';
+}
+const { prices, currency = '$', variant = 'inline' } = Astro.props;
+
+const tiers = [...prices].sort((a, b) => a.quantity - b.quantity);
+const unitLabel = (q: number) => (q === 1 ? 'unidad' : 'unidades');
+---
+
+{
+  variant === 'inline' && tiers.length > 0 && (
+    <p class="tiers-inline">
+      {tiers.map((t, i) => (
+        <>
+          {i > 0 && <span class="tiers-sep">·</span>}
+          <span class="tier">
+            <strong>{t.quantity}</strong> = {currency}
+            {t.price}
+          </span>
+        </>
+      ))}
+    </p>
+  )
+}
+
+{
+  variant === 'table' && tiers.length > 0 && (
+    <table class="tiers-table">
+      <thead>
+        <tr>
+          <th scope="col">Cantidad</th>
+          <th scope="col">Precio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tiers.map((t) => (
+          <tr>
+            <td>{`${t.quantity} ${unitLabel(t.quantity)}`}</td>
+            <td>
+              {currency}
+              {t.price}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+<style>
+  .tiers-inline {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--color-soft);
+    letter-spacing: 0.02em;
+  }
+  .tiers-inline .tier strong {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+  .tiers-sep {
+    margin: 0 0.5rem;
+    color: var(--color-line);
+  }
+
+  .tiers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .tiers-table th {
+    text-align: left;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-soft);
+    padding: 0 0 0.6rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .tiers-table td {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .tiers-table td:last-child {
+    text-align: right;
+    font-weight: 500;
+  }
+  .tiers-table tr:last-child td {
+    border-bottom: none;
+  }
+</style>

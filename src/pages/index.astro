@@ -1,0 +1,180 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+const settings = await getEntry('settings', 'site');
+const currency = settings?.data.currency ?? '$';
+
+const products = (await getCollection('products')).sort((a, b) => {
+  // Destacados primero, luego por campo `order`, luego por nombre.
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+  return a.data.name.localeCompare(b.data.name, 'es');
+});
+
+const categories = [
+  ...new Set(products.map((p) => p.data.category).filter(Boolean)),
+] as string[];
+---
+
+<Base>
+  <section class="hero">
+    <div class="container hero-inner">
+      <img class="hero-logo" src="/logo.jpg" alt="Yulistore" width="120" height="120" />
+      <p class="eyebrow">Ropa deportiva para mujer</p>
+      <h1 class="hero-title">Comodidad que se siente.<br />Estilo que se nota.</h1>
+      <p class="hero-sub">
+        Descubre nuestra colección de enterizos, conjuntos y básicos en tonos
+        neutros. Escríbenos por WhatsApp o Instagram para hacer tu pedido.
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog container" id="catalogo">
+    <header class="catalog-head">
+      <h2 class="catalog-title">Catálogo</h2>
+      {
+        categories.length > 1 && (
+          <div class="filters" role="group" aria-label="Filtrar por categoría">
+            <button class="filter is-active" type="button" data-filter="all">
+              Todo
+            </button>
+            {categories.map((cat) => (
+              <button class="filter" type="button" data-filter={cat}>
+                {cat}
+              </button>
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      products.length === 0 ? (
+        <p class="empty">Pronto agregaremos productos. ¡Vuelve muy pronto!</p>
+      ) : (
+        <div class="grid" id="product-grid">
+          {products.map((product) => (
+            <div class="grid-item" data-category={product.data.category ?? ''}>
+              <ProductCard product={product} currency={currency} />
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .hero {
+    border-bottom: 1px solid var(--color-line);
+    padding: clamp(3rem, 8vw, 6rem) 0 clamp(2.5rem, 6vw, 4.5rem);
+    text-align: center;
+  }
+
+  .hero-inner {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+  }
+
+  .hero-logo {
+    width: clamp(84px, 14vw, 120px);
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 7vw, 4rem);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+
+  .hero-sub {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--color-soft);
+    font-size: 1.02rem;
+  }
+
+  .catalog {
+    padding-top: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .catalog-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .catalog-title {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .filter {
+    background: transparent;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-soft);
+    transition: all 0.2s ease;
+  }
+  .filter:hover {
+    border-color: var(--color-soft);
+    color: var(--color-ink);
+  }
+  .filter.is-active {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-white);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+    gap: clamp(1.5rem, 3vw, 2.75rem) clamp(1rem, 2.5vw, 2rem);
+  }
+
+  .grid-item.is-hidden {
+    display: none;
+  }
+
+  .empty {
+    color: var(--color-soft);
+    font-size: 1.1rem;
+    padding: 2rem 0 4rem;
+  }
+</style>
+
+<script>
+  const filters = document.querySelectorAll<HTMLButtonElement>('.filter');
+  const items = document.querySelectorAll<HTMLElement>('.grid-item');
+
+  filters.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.filter;
+      filters.forEach((b) => b.classList.toggle('is-active', b === btn));
+      items.forEach((item) => {
+        const show = value === 'all' || item.dataset.category === value;
+        item.classList.toggle('is-hidden', !show);
+      });
+    });
+  });
+</script>
