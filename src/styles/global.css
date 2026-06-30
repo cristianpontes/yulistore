@@ -3,6 +3,9 @@
    ============================================================ */
 
 :root {
+  /* Solo tema claro: desactiva el oscurecido automático del navegador. */
+  color-scheme: light;
+
   /* Paleta neutra inspirada en las prendas */
   --color-ink: #161412;        /* casi negro, textos y titulares */
   --color-soft: #4a443d;       /* gris cálido para textos secundarios */
