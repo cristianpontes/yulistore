@@ -3,12 +3,10 @@
 
 backend:
   name: github
-  # Cambia "TU-USUARIO" por el usuario u organización de GitHub donde vive el repo.
-  repo: TU-USUARIO/yulistore
+  repo: cristianpontes/yulistore
   branch: main
-  # URL del Worker de OAuth (sveltia-cms-auth) que despliegas en Cloudflare.
-  # Cambia este dominio por el de tu Worker.
-  base_url: https://yulistore-auth.TU-SUBDOMINIO.workers.dev
+  # URL del Worker de OAuth (sveltia-cms-auth) desplegado en Cloudflare.
+  base_url: https://yulistore-auth.hsilencee.workers.dev
 
 # Editar en una rama y abrir Pull Request, o publicar directo. "simple" = publica directo.
 publish_mode: simple
